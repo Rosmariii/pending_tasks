@@ -3,6 +3,9 @@ import router from "./routes/tasks.routes";
 import routerUser from "./routes/user.routes";
 import { AppDataSource } from "./db";
 import { PORT } from "./config";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
