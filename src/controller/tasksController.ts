@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../db";
 import { Tasks } from "../entities/tasksEntity";
+import jwt from "jsonwebtoken";
 
 export class TaskController {
   taskRepository = AppDataSource.getRepository(Tasks);
@@ -8,9 +9,26 @@ export class TaskController {
   async createTask(req: Request, res: Response) {
     try {
       const { title, description } = req.body;
+      //Refactorizar authHeader
+      const authHeader = req.headers.authorization;
 
-      const newTask = await this.taskRepository.save(title, description);
-      res.json(newTask);
+      if (authHeader) {
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, "your-secret-key");
+        const userId = (decoded as any).id;
+
+        const newTask = this.taskRepository.create({
+          title,
+          description,
+          user: { id: userId },
+        });
+
+        const savedTask = await this.taskRepository.save(newTask);
+
+        res.json(savedTask);
+      } else {
+        res.status(401).send("No autorizado");
+      }
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Error al crear tarea" });
@@ -19,8 +37,21 @@ export class TaskController {
 
   async getAllTasks(req: Request, res: Response) {
     try {
-      const tasks = await this.taskRepository.find();
-      res.json(tasks);
+      const authHeader = req.headers.authorization;
+
+      if (authHeader) {
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, "your-secret-key");
+        const userId = (decoded as any).id;
+
+        const tasks = await this.taskRepository.find({
+          where: { user: { id: userId } },
+        });
+
+        res.json(tasks);
+      } else {
+        res.status(401).send("No autorizado");
+      }
     } catch (error) {
       res.status(500).json({ error: "Error al obtener tareas" });
     }

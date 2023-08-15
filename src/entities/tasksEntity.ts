@@ -5,7 +5,10 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
+import { User } from "./userEntity";
 
 @Entity()
 export class Tasks extends BaseEntity {
@@ -26,4 +29,8 @@ export class Tasks extends BaseEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @JoinColumn({ name: "userId" })
+  @ManyToOne((type) => User, (user) => user.tasks)
+  user: User;
 }
