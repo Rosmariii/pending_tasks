@@ -7,30 +7,50 @@ export class TaskController {
 
   async createTask(req: Request, res: Response) {
     try {
-      const { description } = req.body;
-      const newTask = await this.taskRepository.create(description);
+      const { title, description } = req.body;
+
+      const newTask = await this.taskRepository.save(title, description);
       res.json(newTask);
     } catch (error) {
-      res.status(500).json({ error: "Error creating task" });
+      console.log(error);
+      res.status(500).json({ error: "Error al crear tarea" });
     }
   }
 
-  //   async getAllTasks(req: Request, res: Response) {
-  //     try {
-  //       const tasks = await this.taskService.getAllTasks();
-  //       res.json(tasks);
-  //     } catch (error) {
-  //       res.status(500).json({ error: "Error getting tasks" });
-  //     }
-  //   }
+  async getAllTasks(req: Request, res: Response) {
+    try {
+      const tasks = await this.taskRepository.find();
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener tareas" });
+    }
+  }
 
-  //   async deleteTask(req: Request, res: Response) {
-  //     try {
-  //       const taskId = parseInt(req.params.id, 10);
-  //       await this.taskService.deleteTask(taskId);
-  //       res.json({ message: "Task deleted" });
-  //     } catch (error) {
-  //       res.status(500).json({ error: "Error deleting task" });
-  //     }
-  //   }
+  async modifyTask(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      const completedTask = req.body.completed;
+      const task = await this.taskRepository.findOne({ where: { id } });
+
+      if (task) {
+        task.completed = completedTask;
+        const modify = await this.taskRepository.save(task);
+        res.status(200).json(modify);
+      } else {
+        res.status(500).json("Error al modificar");
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Error al modificar tarea" });
+    }
+  }
+
+  async deleteTask(req: Request, res: Response) {
+    try {
+      const taskId = parseInt(req.params.id);
+      await this.taskRepository.delete(taskId);
+      res.json({ message: "Tarea eliminada" });
+    } catch (error) {
+      res.status(500).json({ error: "Error en eliminar la tarea" });
+    }
+  }
 }

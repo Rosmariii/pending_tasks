@@ -19,7 +19,7 @@ export class Tasks extends BaseEntity {
   description: string;
 
   @Column({ default: false })
-  active: boolean;
+  completed: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
